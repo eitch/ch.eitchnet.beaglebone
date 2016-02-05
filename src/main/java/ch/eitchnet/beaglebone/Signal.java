@@ -52,4 +52,9 @@ public enum Signal {
 			return HIGH;
 		throw new IllegalArgumentException("No signal for value " + valueS);
 	}
+
+	@Override
+	public String toString() {
+		return name();
+	}
 }

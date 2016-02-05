@@ -1,2 +1,9 @@
-# ch.eitchnet.beaglebone
-ch.eitchnet.beaglebone
+# BeagleBoneBlack Java Pin Bridge
+
+## Setup
+
+
+## Build
+
+## Running
+

@@ -2,6 +2,7 @@ package ch.eitchnet.beaglebone;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -23,12 +24,20 @@ public class GpioBridge {
 		this.listeners = Collections.synchronizedMap(new HashMap<>());
 	}
 
-	public void writeValue(Gpio gpio, Signal signal) {
+	private File getGpioValuePath(Gpio gpio) {
+		return new File(GpioBridgeTest.GPIO_PATH, gpio.getKernelName() + "/value");
+	}
+
+	private File getGpioDirectionPath(Gpio gpio) {
+		return new File(GpioBridgeTest.GPIO_PATH, gpio.getKernelName() + "/direction");
+	}
+
+	public void writeValue(Gpio gpio, Signal signal) throws GpioException {
 
 		if (gpio.getDirection() != Direction.OUT)
 			throw new IllegalArgumentException("For writing the direction must be " + Direction.OUT);
 
-		File file = new File(GpioBridgeTest.GPIO_PATH, gpio.getName() + "/value");
+		File file = getGpioValuePath(gpio);
 		try (FileOutputStream out = new FileOutputStream(file)) {
 
 			out.write(signal.getValueS().getBytes());
@@ -37,10 +46,33 @@ public class GpioBridge {
 			gpio.setSignal(signal);
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new GpioException("Failed to write GPIO " + gpio + " with signal " + signal, e);
 		}
 
 		System.out.println("Set GPIO " + gpio.getPin() + " signal to " + gpio.getSignal());
+	}
+
+	public Signal readValue(Gpio gpio) throws GpioException {
+
+		synchronized (gpio) {
+
+			if (gpio.getDirection() != Direction.IN)
+				throw new IllegalArgumentException("For reading the direction must be " + Direction.IN);
+
+			File file = getGpioValuePath(gpio);
+			try (BufferedReader fin = new BufferedReader(new FileReader(file))) {
+
+				String valueS = fin.readLine();
+				Signal signal = Signal.getSignal(valueS);
+				if (!gpio.getSignal().equals(signal))
+					gpio.setSignal(signal);
+
+				return signal;
+
+			} catch (Exception e) {
+				throw new GpioException("Failed to read GPIO " + gpio, e);
+			}
+		}
 	}
 
 	public void start() {
@@ -52,8 +84,10 @@ public class GpioBridge {
 					synchronized (this) {
 						try {
 							wait(1000l);
-						} catch (Exception e) {
-							e.printStackTrace();
+						} catch (InterruptedException e) {
+							System.out.println("Was interrupted. Stopping thread.");
+							this.run = false;
+							break;
 						}
 					}
 				} else {
@@ -62,19 +96,18 @@ public class GpioBridge {
 
 					synchronized (this.listeners) {
 						for (Gpio gpio : this.listeners.keySet()) {
-
-							File file = new File(GpioBridgeTest.GPIO_PATH, gpio.getName() + "/value");
-							try (BufferedReader fin = new BufferedReader(new FileReader(file))) {
-
-								String valueS = fin.readLine();
-								Signal signal = Signal.getSignal(valueS);
-								if (!gpio.getSignal().equals(signal)) {
-									gpio.setSignal(signal);
-									changes.add(gpio);
+							try {
+								synchronized (gpio) {
+									Signal currentSignal = gpio.getSignal();
+									Signal newSignal = readValue(gpio);
+									if (currentSignal != newSignal)
+										changes.add(gpio);
 								}
-
 							} catch (Exception e) {
+								System.out.println("Failed to read GPIO " + gpio + " due to:");
 								e.printStackTrace();
+								this.run = false;
+								break;
 							}
 						}
 					}
@@ -89,20 +122,28 @@ public class GpioBridge {
 									+ ". Notifying " + listeners.size() + " listeners.");
 
 							for (GpioSignalListener listener : listeners) {
-								listener.notify(gpio);
+								try {
+									listener.notify(gpio);
+								} catch (Exception e) {
+									System.out.println("Failed to update listener " + listener + " due to:");
+									e.printStackTrace();
+								}
 							}
 						}
 					}
 
 					try {
 						Thread.sleep(200l);
-					} catch (Exception e) {
-						e.printStackTrace();
+					} catch (InterruptedException e) {
+						System.out.println("Was interrupted. Stopping thread.");
+						this.run = false;
+						break;
 					}
 				}
 			}
 		} , "gpio_reader");
 		this.thread.start();
+		System.out.println("Started GPIO bridge.");
 	}
 
 	public void stop() {
@@ -111,38 +152,66 @@ public class GpioBridge {
 		try {
 			this.thread.join(5000l);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			System.out.println("Was interrupted while waiting for thread to stop?!");
 		}
 	}
 
-	public Gpio getGpio(Pin pin, Direction direction) {
+	public synchronized Gpio getGpio(Pin pin, Direction direction) throws GpioException {
 		Gpio gpio = this.cache.get(pin);
 		if (gpio == null) {
+
 			gpio = new Gpio(pin, direction);
 
-			File file = new File(GpioBridgeTest.GPIO_PATH, gpio.getName() + "/direction");
-			try (BufferedReader fin = new BufferedReader(new FileReader(file))) {
+			// validate direction
+			validateDirection(pin, direction, gpio);
 
-				String directionS = fin.readLine();
-				Direction dir = Direction.getDirection(directionS);
-				if (dir != direction)
-					throw new IllegalArgumentException(
-							"Actual direction of GPIO " + gpio.getPin() + " is " + dir + " not " + directionS);
-
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			// validate file permissions
+			validateFilePermissions(direction, gpio);
 
 			this.cache.put(pin, gpio);
+			System.out.println("Initialized pin " + pin + " with direction " + direction + ".");
 		}
 
 		return gpio;
 	}
 
-	public void register(Gpio gpio, GpioSignalListener listener) {
+	private void validateDirection(Pin pin, Direction direction, Gpio gpio) throws GpioException {
+		File file = getGpioDirectionPath(gpio);
+		try (BufferedReader fin = new BufferedReader(new FileReader(file))) {
+
+			String directionS = fin.readLine();
+			Direction dir = Direction.getDirection(directionS);
+			if (dir != direction)
+				throw new GpioException(
+						"Actual direction of GPIO " + gpio.getPin() + " is " + dir + " not " + directionS);
+
+		} catch (FileNotFoundException e) {
+			throw new GpioException("GPIO " + pin + " does not exist, was the pin exported to user space?", e);
+		} catch (IOException e) {
+			throw new GpioException("Failed to open GPIO " + pin, e);
+		}
+	}
+
+	private void validateFilePermissions(Direction direction, Gpio gpio) throws GpioException {
+		File gpioValuePath = getGpioValuePath(gpio);
+		if (direction == Direction.IN) {
+			if (!gpioValuePath.canRead())
+				throw new GpioException("GPIO " + gpio + " has direction " + direction
+						+ " and is not readable. Are the file permissions ok?");
+
+		} else if (direction == Direction.OUT) {
+			if (!gpioValuePath.canWrite())
+				throw new GpioException("GPIO " + gpio + " has direction " + direction
+						+ " and is not writable. Are the file permissions ok?");
+		} else {
+			throw new RuntimeException("Unhandled Direction " + direction);
+		}
+	}
+
+	public void register(Gpio gpio, GpioSignalListener listener) throws GpioException {
 
 		if (gpio.getDirection() != Direction.IN)
-			throw new IllegalArgumentException("For reading the direction must be " + Direction.IN);
+			throw new GpioException("For reading the direction must be " + Direction.IN);
 
 		synchronized (this.listeners) {
 			List<GpioSignalListener> listeners = this.listeners.get(gpio);

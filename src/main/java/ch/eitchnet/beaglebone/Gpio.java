@@ -3,7 +3,7 @@ package ch.eitchnet.beaglebone;
 public class Gpio {
 
 	private final Pin pin;
-	private final String name;
+	private final String kernelName;
 	private final Direction direction;
 	private String label;
 	private Signal signal;
@@ -11,8 +11,8 @@ public class Gpio {
 	public Gpio(Pin pin, Direction direction) {
 		this.pin = pin;
 		this.direction = direction;
-		this.name = "gpio" + pin.getGpioNr();
-		this.label = name;
+		this.kernelName = "gpio" + pin.getGpioNr();
+		this.label = kernelName;
 		this.signal = Signal.LOW;
 	}
 
@@ -20,8 +20,8 @@ public class Gpio {
 		return this.pin;
 	}
 
-	public String getName() {
-		return this.name;
+	public String getKernelName() {
+		return this.kernelName;
 	}
 
 	public Gpio setLabel(String label) {
@@ -44,5 +44,10 @@ public class Gpio {
 	public Gpio setSignal(Signal signal) {
 		this.signal = signal;
 		return this;
+	}
+
+	@Override
+	public String toString() {
+		return this.pin.toString();
 	}
 }

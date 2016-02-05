@@ -2,13 +2,13 @@ package ch.eitchnet.beaglebone;
 
 public enum Pin {
 
-	P8_3("P8.3", 1, 6),
-	P8_4("P8.4", 1, 7),
-	P8_5("P8.5", 1, 2),
-	P8_6("P8.6", 1, 3),
-	P8_7("P8.7", 2, 2),
-	P8_8("P8.8", 2, 3),
-	P8_9("P8.9", 2, 2),
+	P8_03("P8.03", 1, 6),
+	P8_04("P8.04", 1, 7),
+	P8_05("P8.05", 1, 2),
+	P8_06("P8.06", 1, 3),
+	P8_07("P8.07", 2, 2),
+	P8_08("P8.08", 2, 3),
+	P8_09("P8.09", 2, 5),
 	P8_10("P8.10", 2, 4),
 	P8_11("P8.11", 1, 13),
 	P8_12("P8.12", 1, 12),
@@ -68,8 +68,10 @@ public enum Pin {
 	P9_29("P9.29", 3, 15),
 	P9_30("P9.30", 3, 16),
 	P9_31("P9.31", 3, 14),
-	P9_41("P9.41", 0, 20),
-	P9_42("P9.42", 0, 7);
+	P9_41A("P9.41A", 0, 20),
+	P9_41B("P9.41B", 3, 20),
+	P9_42A("P9.42A", 0, 7),
+	P9_42B("P9.42B", 3, 18);
 
 	private String label;
 	private int chip;
@@ -95,5 +97,10 @@ public enum Pin {
 
 	public int getGpioNr() {
 		return this.chip * 32 + this.pin;
+	}
+
+	@Override
+	public String toString() {
+		return this.label;
 	}
 }
