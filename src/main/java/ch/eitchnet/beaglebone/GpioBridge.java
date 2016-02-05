@@ -19,7 +19,17 @@ public class GpioBridge {
 	private Thread thread;
 	private volatile boolean run;
 
-	public GpioBridge() {
+	private static final GpioBridge instance;
+
+	static {
+		instance = new GpioBridge();
+	}
+
+	public static GpioBridge getInstance() {
+		return instance;
+	}
+
+	private GpioBridge() {
 		this.cache = new HashMap<>();
 		this.listeners = Collections.synchronizedMap(new HashMap<>());
 	}
