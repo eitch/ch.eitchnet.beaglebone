@@ -62,3 +62,9 @@ Once the JAR is on the BeagleBone, running is as follows:
 java -jar BeagleBone.jar
 </pre>
 
+## Further reading:
+* https://www.kernel.org/doc/Documentation/gpio/sysfs.txt
+* http://beaglebone.cameon.net/home/using-the-gpios
+* https://www.linux.com/learn/tutorials/776799-servo-control-from-the-beaglebone-black
+* https://www.youtube.com/watch?v=wui_wU1AeQc
+* https://www.youtube.com/watch?v=s9tnTcQlTDY
