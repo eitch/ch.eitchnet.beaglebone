@@ -10,6 +10,8 @@ Features are:
 * Simple model for hardware: `Pin`, `Gpio`, `Signal`, `Direction`
 * Clear exception handling for user and configuration errors (`GpioException`)
 
+If you have any issues, don't hesitate to add an issue to the GitHub project, write me an e-mail (eitch@eitchnet.ch) or reach me on Twitter!
+
 ## Setup BeagleBone
 * Copy the scripts and files to the BeagleBone:
 <pre>
