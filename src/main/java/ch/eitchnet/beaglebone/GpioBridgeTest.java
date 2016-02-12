@@ -2,8 +2,6 @@ package ch.eitchnet.beaglebone;
 
 public class GpioBridgeTest {
 
-	static final String GPIO_PATH = "/sys/class/gpio/";
-
 	private static Gpio redBtn;
 	private static Gpio blueBtn;
 	private static Gpio greenBtn;

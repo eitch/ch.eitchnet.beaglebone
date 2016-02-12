@@ -1,5 +1,17 @@
 package ch.eitchnet.beaglebone;
 
+/**
+ * <p>
+ * This enum defines all the {@link Gpio} pins of the BeagleBoneBlack
+ * </p>
+ * 
+ * <p>
+ * The BealgeBoneBlack has two banks of pins, of which not all pins can be used as a GPIO (general purpose
+ * input/outpunt) pin.
+ * </p>
+ * 
+ * @author Robert von Burg <eitch@eitchnet.ch>
+ */
 public enum Pin {
 
 	P8_03("P8.03", 1, 6),
@@ -83,22 +95,38 @@ public enum Pin {
 		this.pin = pin;
 	}
 
+	/**
+	 * @return the user label of this pin, e.g. "P8.03"
+	 */
 	public String getLabel() {
 		return this.label;
 	}
 
+	/**
+	 * @return the GPIO chip on which this Pin is configured on the BeagleBoneBlack's CPU
+	 */
 	public int getChip() {
 		return this.chip;
 	}
 
+	/**
+	 * @return The kernel pin number. <b>Note:</b> this is not the pin number on the pin header, neither the GPIO number
+	 *         used to export the pin to userspace
+	 */
 	public int getPin() {
 		return this.pin;
 	}
 
+	/**
+	 * @return The GPIO number with which the pin is exported to userspace
+	 */
 	public int getGpioNr() {
 		return this.chip * 32 + this.pin;
 	}
 
+	/**
+	 * Returns the configured label e.g. "P8.03"
+	 */
 	@Override
 	public String toString() {
 		return this.label;

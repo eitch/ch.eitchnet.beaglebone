@@ -12,7 +12,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * <p>
+ * Main object to give access to GPIO ports on a Linux kernel
+ * </p>
+ * 
+ * <p>
+ * The {@link GpioBridge} is a singleton. Features include retrieving Pins, writing and reading values, as well as
+ * registering observers for changes to input pins
+ * </p>
+ * 
+ * <p>
+ * {@link Gpio} objects are cached and their {@link Signal} is set by the {@link GpioBridge} accordingly
+ * </p>
+ * 
+ * @author Robert von Burg <eitch@eitchnet.ch>
+ */
 public class GpioBridge {
+
+	private static final String GPIO_PATH = "/sys/class/gpio/";
 
 	private Map<Pin, Gpio> cache;
 	private Map<Gpio, List<GpioSignalListener>> listeners;
@@ -25,49 +43,100 @@ public class GpioBridge {
 		instance = new GpioBridge();
 	}
 
+	/**
+	 * @return the instance of the {@link GpioBridge}
+	 */
 	public static GpioBridge getInstance() {
 		return instance;
 	}
 
+	/**
+	 * Private constructor for singleton construction
+	 */
 	private GpioBridge() {
 		this.cache = new HashMap<>();
 		this.listeners = Collections.synchronizedMap(new HashMap<>());
 	}
 
+	/**
+	 * Returns the kernel file path to the value of the {@link Gpio}
+	 * 
+	 * @param gpio
+	 *            the {@link Gpio} for which the path is to be returned
+	 * @return the Path to the {@link Gpio}'s value
+	 */
 	private File getGpioValuePath(Gpio gpio) {
-		return new File(GpioBridgeTest.GPIO_PATH, gpio.getKernelName() + "/value");
+		return new File(GPIO_PATH, gpio.getKernelName() + "/value");
 	}
 
+	/**
+	 * Returns the kernel file path to the direction of the {@link Gpio}
+	 * 
+	 * @param gpio
+	 *            the {@link Gpio} for which the path is to be returned
+	 * @return the Path to the {@link Gpio}'s direction
+	 */
 	private File getGpioDirectionPath(Gpio gpio) {
-		return new File(GpioBridgeTest.GPIO_PATH, gpio.getKernelName() + "/direction");
+		return new File(GPIO_PATH, gpio.getKernelName() + "/direction");
 	}
 
+	/**
+	 * <p>
+	 * Public API method to write the given {@link Signal} on the given {@link Gpio}'s pin.
+	 * </p>
+	 * 
+	 * @param gpio
+	 *            the {@link Gpio} to which the {@link Signal} should be written
+	 * @param signal
+	 *            the {@link Signal} to write to the given {@link Gpio}
+	 * 
+	 * @throws GpioException
+	 *             if the direction of the {@link Gpio} is not {@link Direction#OUT}, or if something goes wrong while
+	 *             writing to the file
+	 */
 	public void writeValue(Gpio gpio, Signal signal) throws GpioException {
 
-		if (gpio.getDirection() != Direction.OUT)
-			throw new IllegalArgumentException("For writing the direction must be " + Direction.OUT);
+		synchronized (gpio) {
+			if (gpio.getDirection() != Direction.OUT)
+				throw new GpioException("For writing the direction must be " + Direction.OUT);
 
-		File file = getGpioValuePath(gpio);
-		try (FileOutputStream out = new FileOutputStream(file)) {
+			File file = getGpioValuePath(gpio);
+			try (FileOutputStream out = new FileOutputStream(file)) {
 
-			out.write(signal.getValueS().getBytes());
-			out.flush();
+				out.write(signal.getValueS().getBytes());
+				out.flush();
 
-			gpio.setSignal(signal);
+				gpio.setSignal(signal);
 
-		} catch (Exception e) {
-			throw new GpioException("Failed to write GPIO " + gpio + " with signal " + signal, e);
+			} catch (Exception e) {
+				throw new GpioException("Failed to write GPIO " + gpio + " with signal " + signal, e);
+			}
+
+			System.out.println("Set GPIO " + gpio.getPin() + " signal to " + gpio.getSignal());
 		}
-
-		System.out.println("Set GPIO " + gpio.getPin() + " signal to " + gpio.getSignal());
 	}
 
+	/**
+	 * <p>
+	 * Public API method to read the current {@link Signal} on the given {@link Gpio}'s pin.
+	 * </p>
+	 * 
+	 * @param gpio
+	 *            the {@link Gpio} for which the {@link Signal} should be read
+	 * @param gpio
+	 * 
+	 * @return The {@link Gpio}'s current signal
+	 * 
+	 * @throws GpioException
+	 *             if the direction of the {@link Gpio} is not {@link Direction#IN}, or if something goes wrong while
+	 *             reading from the file
+	 */
 	public Signal readValue(Gpio gpio) throws GpioException {
 
 		synchronized (gpio) {
 
 			if (gpio.getDirection() != Direction.IN)
-				throw new IllegalArgumentException("For reading the direction must be " + Direction.IN);
+				throw new GpioException("For reading the direction must be " + Direction.IN);
 
 			File file = getGpioValuePath(gpio);
 			try (BufferedReader fin = new BufferedReader(new FileReader(file))) {
@@ -85,6 +154,10 @@ public class GpioBridge {
 		}
 	}
 
+	/**
+	 * Starts the {@link GpioBridge}'s signal observing {@link Thread}. If no observers are registered with the
+	 * {@link #register(Gpio, GpioSignalListener)}-method, then this method needs not to be called.
+	 */
 	public void start() {
 
 		this.run = true;
@@ -156,6 +229,9 @@ public class GpioBridge {
 		System.out.println("Started GPIO bridge.");
 	}
 
+	/**
+	 * Stops observing any pins and stops the {@link Thread}
+	 */
 	public void stop() {
 		this.run = false;
 		this.thread.interrupt();
@@ -166,6 +242,29 @@ public class GpioBridge {
 		}
 	}
 
+	/**
+	 * <p>
+	 * Returns the {@link Gpio} for the given {@link Direction}.
+	 * </p>
+	 * 
+	 * <p>
+	 * <b>Note:</b> This method can not be called multiple times with different {@link Direction}s. The
+	 * {@link GpioBridge} does not handle pins that are simultaneously input and output as this is not supported by the
+	 * Linux kernel.
+	 * </p>
+	 * 
+	 * @param pin
+	 *            The {@link Pin} for which the {@link Gpio} in the given {@link Direction} is to be returned
+	 * @param direction
+	 *            the {@link Direction} for which this {@link Gpio} is to be returned
+	 * 
+	 * @return The {@link Gpio} with the configured {@link Direction}
+	 * 
+	 * @throws GpioException
+	 *             If the given {@link Direction} does not match the kernel's configured direction, or if the file
+	 *             permissions are not set so that the Java process can access the file (read access for input pin,
+	 *             write access for output pin.
+	 */
 	public synchronized Gpio getGpio(Pin pin, Direction direction) throws GpioException {
 		Gpio gpio = this.cache.get(pin);
 		if (gpio == null) {
@@ -173,10 +272,10 @@ public class GpioBridge {
 			gpio = new Gpio(pin, direction);
 
 			// validate direction
-			validateDirection(pin, direction, gpio);
+			assertDirection(gpio);
 
 			// validate file permissions
-			validateFilePermissions(direction, gpio);
+			validateFilePermissions(gpio);
 
 			this.cache.put(pin, gpio);
 			System.out.println("Initialized pin " + pin + " with direction " + direction + ".");
@@ -185,15 +284,24 @@ public class GpioBridge {
 		return gpio;
 	}
 
-	private void validateDirection(Pin pin, Direction direction, Gpio gpio) throws GpioException {
+	/**
+	 * Validates the direction of the {@link Gpio} is the same as kernel's exported state
+	 * 
+	 * @param gpio
+	 *            the {@link Gpio} been asserted for direction
+	 * 
+	 * @throws GpioException
+	 *             if the assertion fails
+	 */
+	private void assertDirection(Gpio gpio) throws GpioException {
 		File file = getGpioDirectionPath(gpio);
+		Pin pin = gpio.getPin();
 		try (BufferedReader fin = new BufferedReader(new FileReader(file))) {
 
 			String directionS = fin.readLine();
 			Direction dir = Direction.getDirection(directionS);
-			if (dir != direction)
-				throw new GpioException(
-						"Actual direction of GPIO " + gpio.getPin() + " is " + dir + " not " + directionS);
+			if (dir != gpio.getDirection())
+				throw new GpioException("Actual direction of GPIO " + pin + " is " + dir + " not " + directionS);
 
 		} catch (FileNotFoundException e) {
 			throw new GpioException("GPIO " + pin + " does not exist, was the pin exported to user space?", e);
@@ -202,8 +310,22 @@ public class GpioBridge {
 		}
 	}
 
-	private void validateFilePermissions(Direction direction, Gpio gpio) throws GpioException {
+	/**
+	 * Validates the file permissions of the {@link Gpio} is correct for the {@link Gpio}'s {@link Direction}:
+	 * <ul>
+	 * <li>read access for input pin</li>
+	 * <li>write access for output pin</li>
+	 * </ul>
+	 * 
+	 * @param gpio
+	 *            the {@link Gpio} been asserted for direction
+	 * 
+	 * @throws GpioException
+	 *             if the assertion fails
+	 */
+	private void validateFilePermissions(Gpio gpio) throws GpioException {
 		File gpioValuePath = getGpioValuePath(gpio);
+		Direction direction = gpio.getDirection();
 		if (direction == Direction.IN) {
 			if (!gpioValuePath.canRead())
 				throw new GpioException("GPIO " + gpio + " has direction " + direction
@@ -218,6 +340,17 @@ public class GpioBridge {
 		}
 	}
 
+	/**
+	 * Registers the given {@link GpioSignalListener} for changes to {@link Signal}s on the given {@link Gpio}
+	 * 
+	 * @param gpio
+	 *            the {@link Gpio} being observed
+	 * @param listener
+	 *            the {@link GpioSignalListener} to be notified on changes on the {@link Gpio}'s {@link Signal}
+	 * 
+	 * @throws GpioException
+	 *             if the {@link Direction} of the {@link Gpio} is not {@link Direction#IN}
+	 */
 	public void register(Gpio gpio, GpioSignalListener listener) throws GpioException {
 
 		if (gpio.getDirection() != Direction.IN)
@@ -238,17 +371,27 @@ public class GpioBridge {
 		}
 	}
 
-	public void unregister(GpioBridgeTest gpio, GpioSignalListener listener) {
+	/**
+	 * Unregisters a {@link GpioSignalListener} from changes to the given {@link Gpio}
+	 * 
+	 * @param gpio
+	 *            the {@link Gpio} for which the listener is to be removed
+	 * @param listener
+	 *            the {@link GpioSignalListener} to be removed from changes to the given {@link Gpio}
+	 */
+	public boolean unregister(GpioBridgeTest gpio, GpioSignalListener listener) {
 		synchronized (this.listeners) {
 			List<GpioSignalListener> listeners = this.listeners.get(gpio);
 			if (listeners == null) {
-				return;
+				return false;
 			}
 
-			listeners.remove(listener);
+			boolean removed = listeners.remove(listener);
 
 			if (listeners.isEmpty())
 				this.listeners.remove(gpio);
+
+			return removed;
 		}
 	}
 }

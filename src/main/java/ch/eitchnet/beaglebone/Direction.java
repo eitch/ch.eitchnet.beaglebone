@@ -1,5 +1,16 @@
 package ch.eitchnet.beaglebone;
 
+/**
+ * <p>
+ * Defines the direction of a {@link Gpio}
+ * </p>
+ * 
+ * <p>
+ * A {@link Gpio} can be either an input pin, or an output pin. This is defined by this enum
+ * </p>
+ * 
+ * @author Robert von Burg <eitch@eitchnet.ch>
+ */
 public enum Direction {
 	IN("in"), OUT("out");
 
