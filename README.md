@@ -12,6 +12,51 @@ Features are:
 
 If you have any issues, don't hesitate to add an issue to the GitHub project, write me an e-mail (eitch@eitchnet.ch) or reach me on Twitter!
 
+## Java API
+Before trying to use the Java API and wondering why it does not work, be very careful to ensure that the GPIOs are properly exported to userspace by using a device tree overlay and then using the `/sys/class/gpio/export` file to export the GPIO to userspace.
+
+The Java API is simple and requires no configuration files. Everything is done programmitically. The main object is the `GpioBridge` instance which is retrieved as follows:
+<pre>
+GpioBridge gpioBridge = GpioBridge.getInstance();
+</pre>
+
+With a reference to the `GpioBridge`, `GPIO` objects can be retrieved by their `Pin` enum and a `Direction` as follows:
+<pre>
+GpioBridge gpioBridge = GpioBridge.getInstance();
+Gpio pin8_07 = gpioBridge.getGpio(Pin.P8_07, Direction.IN);
+</pre>
+
+The `GpioBridge.getGpio()`-method will throw an exception if:
+* the requested direction does not correspond to the direction configured in the kernel's exported pin
+* the file permissions are not set so that the Java process can access the file (read access for input pin, write access for output pin.
+
+### Reading Input Pins
+To read the current signal of a pin use the `GpioBridge.readValue()`-method:
+<pre>
+GpioBridge gpioBridge = GpioBridge.getInstance();
+Gpio pin8_07 = gpioBridge.getGpio(Pin.P8_07, Direction.IN);
+Signal currentSignal = gpioBridge.readValue(pin8_07);
+System.out.println(pin8_07 + " currently has signal " + currentSignal);
+</pre>
+
+### Writing Output Pins
+To write the signal of a pin use the `GpioBridge.writeValue()`-method:
+<pre>
+GpioBridge gpioBridge = GpioBridge.getInstance();
+Gpio pin8_08 = gpioBridge.getGpio(Pin.P8_08, Direction.OUT);
+gpioBridge.writeValue(pin8_08, Signal.HIGH);
+System.out.println("Set signal of " + pin8_08 + " to " + Signal.HIGH);
+</pre>
+
+### Observing Input Pins
+To be notified of changes to an input GPIO, register a `GpioSignalListener`:
+<pre>
+GpioBridge gpioBridge = GpioBridge.getInstance();
+Gpio pin8_07 = gpioBridge.getGpio(Pin.P8_07, Direction.IN);
+gpioBridge.register(pin8_07, gpio -> System.out.println("Signal of "+pin8_07 + " has changed to " + gpio.getSignal()));
+</pre>
+
+
 ## Setup BeagleBone
 * Copy the scripts and files to the BeagleBone:
 <pre>
