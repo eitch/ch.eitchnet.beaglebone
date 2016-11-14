@@ -14,7 +14,7 @@ package ch.eitchnet.beaglebone;
  * A signal of {@link #LOW} means that the value is 0, and a value of {@link #HIGH} means the value is 1
  * </p>
  * 
- * @author Robert von Burg <eitch@eitchnet.ch>
+ * @author Robert von Burg &lt;eitch@eitchnet.ch&gt;
  */
 public enum Signal {
 	LOW(0, "0", false, "low"), HIGH(1, "1", true, "high");
@@ -87,7 +87,7 @@ public enum Signal {
 	/**
 	 * Returns the {@link Signal} enum for the given string value
 	 * 
-	 * @param value
+	 * @param valueS
 	 *            the value for which to return the {@link Signal}
 	 * 
 	 * @return the {@link Signal} for the given string value

@@ -3,7 +3,7 @@ package ch.eitchnet.beaglebone;
 /**
  * General {@link Exception} for exceptional situations while using the {@link GpioBridge}
  * 
- * @author Robert von Burg <eitch@eitchnet.ch>
+ * @author Robert von Burg &lt;eitch@eitchnet.ch&gt;
  */
 public class GpioException extends Exception {
 

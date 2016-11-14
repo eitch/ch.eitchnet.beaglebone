@@ -10,7 +10,7 @@ package ch.eitchnet.beaglebone;
  * input/outpunt) pin.
  * </p>
  * 
- * @author Robert von Burg <eitch@eitchnet.ch>
+ * @author Robert von Burg &lt;eitch@eitchnet.ch&gt;
  */
 public enum Pin {
 

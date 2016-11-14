@@ -14,7 +14,7 @@ package ch.eitchnet.beaglebone;
  * written.
  * </p>
  * 
- * @author Robert von Burg <eitch@eitchnet.ch>
+ * @author Robert von Burg &lt;eitch@eitchnet.ch&gt;
  */
 public class Gpio {
 

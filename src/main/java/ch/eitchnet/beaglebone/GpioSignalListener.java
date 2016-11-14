@@ -6,11 +6,11 @@ package ch.eitchnet.beaglebone;
  * {@link Gpio} is {@link Direction#IN}
  * </p>
  * 
- * </p>
+ * <p>
  * Register the {@link GpioSignalListener} calling {@link GpioBridge#register(Gpio, GpioSignalListener)}
  * </p>
  * 
- * @author Robert von Burg <eitch@eitchnet.ch>
+ * @author Robert von Burg &lt;eitch@eitchnet.ch&gt;
  */
 public interface GpioSignalListener {
 

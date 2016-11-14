@@ -26,7 +26,7 @@ import java.util.Map;
  * {@link Gpio} objects are cached and their {@link Signal} is set by the {@link GpioBridge} accordingly
  * </p>
  * 
- * @author Robert von Burg <eitch@eitchnet.ch>
+ * @author Robert von Burg &lt;eitch@eitchnet.ch&gt;
  */
 public class GpioBridge {
 
@@ -63,6 +63,7 @@ public class GpioBridge {
 	 * 
 	 * @param gpio
 	 *            the {@link Gpio} for which the path is to be returned
+	 * 
 	 * @return the Path to the {@link Gpio}'s value
 	 */
 	private File getGpioValuePath(Gpio gpio) {
@@ -74,6 +75,7 @@ public class GpioBridge {
 	 * 
 	 * @param gpio
 	 *            the {@link Gpio} for which the path is to be returned
+	 * 
 	 * @return the Path to the {@link Gpio}'s direction
 	 */
 	private File getGpioDirectionPath(Gpio gpio) {
@@ -123,7 +125,6 @@ public class GpioBridge {
 	 * 
 	 * @param gpio
 	 *            the {@link Gpio} for which the {@link Signal} should be read
-	 * @param gpio
 	 * 
 	 * @return The {@link Gpio}'s current signal
 	 * 
@@ -224,7 +225,7 @@ public class GpioBridge {
 					}
 				}
 			}
-		} , "gpio_reader");
+		}, "gpio_reader");
 		this.thread.start();
 		System.out.println("Started GPIO bridge.");
 	}
@@ -378,6 +379,8 @@ public class GpioBridge {
 	 *            the {@link Gpio} for which the listener is to be removed
 	 * @param listener
 	 *            the {@link GpioSignalListener} to be removed from changes to the given {@link Gpio}
+	 * 
+	 * @return true if the listener was unregistered, false if not
 	 */
 	public boolean unregister(GpioBridgeTest gpio, GpioSignalListener listener) {
 		synchronized (this.listeners) {

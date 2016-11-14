@@ -1,5 +1,10 @@
 package ch.eitchnet.beaglebone;
 
+/**
+ * Bridge test class
+ * 
+ * @author Robert von Burg &lt;eitch@eitchnet.ch&gt;
+ */
 public class GpioBridgeTest {
 
 	private static Gpio redBtn;
