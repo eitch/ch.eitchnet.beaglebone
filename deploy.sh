@@ -49,7 +49,7 @@ fi
 
 # Build and deploy
 echo -e "\nINFO: Building and deploying to Maven Central..."
-if ! mvn clean deploy -DskipTests -Pdeploy > /dev/null ; then
+if ! mvn clean deploy -DskipTests -Pdeploy ; then
   echo -e "ERROR: Failed to build and deploy to Maven Central!"
   exit 1
 fi
