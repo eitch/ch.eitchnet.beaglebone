@@ -7,7 +7,7 @@ package ch.eitchnet.beaglebone;
  * </p>
  * 
  * <p>
- * Register the {@link GpioSignalListener} calling {@link GpioBridge#register(Gpio, GpioSignalListener)}
+ * Register the {@link GpioSignalListener} calling {@link GpioBridgeImpl#register(Gpio, GpioSignalListener)}
  * </p>
  * 
  * @author Robert von Burg &lt;eitch@eitchnet.ch&gt;

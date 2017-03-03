@@ -6,11 +6,11 @@ package ch.eitchnet.beaglebone;
  * </p>
  * 
  * <p>
- * {@link Gpio} are instantiated by the {@link GpioBridge} by calling {@link GpioBridge#getGpio(Pin, Direction)}
+ * {@link Gpio} are instantiated by the {@link GpioBridgeImpl} by calling {@link GpioBridgeImpl#getGpio(Pin, Direction)}
  * </p>
  * 
  * <p>
- * The {@link Gpio}'s {@link Signal} is always updated by the {@link GpioBridge} when a new {@link Signal} is read or
+ * The {@link Gpio}'s {@link Signal} is always updated by the {@link GpioBridgeImpl} when a new {@link Signal} is read or
  * written.
  * </p>
  * 
@@ -90,7 +90,7 @@ public class Gpio {
 
 	/**
 	 * <p>
-	 * THIS METHOD IS ONLY CALLED BY THE {@link GpioBridge}
+	 * THIS METHOD IS ONLY CALLED BY THE {@link GpioBridgeImpl}
 	 * </p>
 	 * 
 	 * <p>
