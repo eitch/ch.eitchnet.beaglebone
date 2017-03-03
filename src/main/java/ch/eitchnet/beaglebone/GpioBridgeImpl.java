@@ -1,16 +1,7 @@
 package ch.eitchnet.beaglebone;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
 /**
  * <p>
@@ -18,12 +9,12 @@ import java.util.Map;
  * </p>
  * 
  * <p>
- * The {@link GpioBridgeImpl} is a singleton. Features include retrieving Pins, writing and reading values, as well as
+ * The {@link GpioBridge} is a singleton. Features include retrieving Pins, writing and reading values, as well as
  * registering observers for changes to input pins
  * </p>
  * 
  * <p>
- * {@link Gpio} objects are cached and their {@link Signal} is set by the {@link GpioBridgeImpl} accordingly
+ * {@link Gpio} objects are cached and their {@link Signal} is set by the {@link GpioBridge} accordingly
  * </p>
  * 
  * @author Robert von Burg &lt;eitch@eitchnet.ch&gt;
@@ -44,7 +35,7 @@ public class GpioBridgeImpl implements GpioBridge {
 	}
 
 	/**
-	 * @return the instance of the {@link GpioBridgeImpl}
+	 * @return the instance of the {@link GpioBridge}
 	 */
 	public static GpioBridge getInstance() {
 		return instance;
@@ -158,7 +149,7 @@ public class GpioBridgeImpl implements GpioBridge {
 	}
 
 	/**
-	 * Starts the {@link GpioBridgeImpl}'s signal observing {@link Thread}. If no observers are registered with the
+	 * Starts the {@link GpioBridge}'s signal observing {@link Thread}. If no observers are registered with the
 	 * {@link #register(Gpio, GpioSignalListener)}-method, then this method needs not to be called.
 	 */
 	@Override
@@ -254,7 +245,7 @@ public class GpioBridgeImpl implements GpioBridge {
 	 * 
 	 * <p>
 	 * <b>Note:</b> This method can not be called multiple times with different {@link Direction}s. The
-	 * {@link GpioBridgeImpl} does not handle pins that are simultaneously input and output as this is not supported by the
+	 * {@link GpioBridge} does not handle pins that are simultaneously input and output as this is not supported by the
 	 * Linux kernel.
 	 * </p>
 	 * 

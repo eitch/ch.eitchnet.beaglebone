@@ -1,7 +1,7 @@
 package ch.eitchnet.beaglebone;
 
 /**
- * General {@link Exception} for exceptional situations while using the {@link GpioBridgeImpl}
+ * General {@link Exception} for exceptional situations while using the {@link GpioBridge}
  * 
  * @author Robert von Burg &lt;eitch@eitchnet.ch&gt;
  */

@@ -1,8 +1,5 @@
 package ch.eitchnet.beaglebone;
 
-/**
- * Created by bds on 03/03/17.
- */
 public interface GpioBridge {
     /**
      * <p>
