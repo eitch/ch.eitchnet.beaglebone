@@ -88,7 +88,7 @@ public class GpioBridgeImpl implements GpioBridge {
 	 *             writing to the file
 	 */
 	@Override
-    public void writeValue(Gpio gpio, Signal signal) throws GpioException {
+	public void writeValue(Gpio gpio, Signal signal) throws GpioException {
 
 		synchronized (gpio) {
 			if (gpio.getDirection() != Direction.OUT)
@@ -125,7 +125,7 @@ public class GpioBridgeImpl implements GpioBridge {
 	 *             reading from the file
 	 */
 	@Override
-    public Signal readValue(Gpio gpio) throws GpioException {
+	public Signal readValue(Gpio gpio) throws GpioException {
 
 		synchronized (gpio) {
 
@@ -153,7 +153,7 @@ public class GpioBridgeImpl implements GpioBridge {
 	 * {@link #register(Gpio, GpioSignalListener)}-method, then this method needs not to be called.
 	 */
 	@Override
-    public void start() {
+	public void start() {
 
 		this.run = true;
 		this.thread = new Thread(() -> {
@@ -228,7 +228,7 @@ public class GpioBridgeImpl implements GpioBridge {
 	 * Stops observing any pins and stops the {@link Thread}
 	 */
 	@Override
-    public void stop() {
+	public void stop() {
 		this.run = false;
 		this.thread.interrupt();
 		try {
@@ -262,7 +262,7 @@ public class GpioBridgeImpl implements GpioBridge {
 	 *             write access for output pin.
 	 */
 	@Override
-    public synchronized Gpio getGpio(Pin pin, Direction direction) throws GpioException {
+	public synchronized Gpio getGpio(Pin pin, Direction direction) throws GpioException {
 		Gpio gpio = this.cache.get(pin);
 		if (gpio == null) {
 
@@ -349,7 +349,7 @@ public class GpioBridgeImpl implements GpioBridge {
 	 *             if the {@link Direction} of the {@link Gpio} is not {@link Direction#IN}
 	 */
 	@Override
-    public void register(Gpio gpio, GpioSignalListener listener) throws GpioException {
+	public void register(Gpio gpio, GpioSignalListener listener) throws GpioException {
 
 		if (gpio.getDirection() != Direction.IN)
 			throw new GpioException("For reading the direction must be " + Direction.IN);
@@ -380,7 +380,7 @@ public class GpioBridgeImpl implements GpioBridge {
 	 * @return true if the listener was unregistered, false if not
 	 */
 	@Override
-    public boolean unregister(GpioBridgeTest gpio, GpioSignalListener listener) {
+	public boolean unregister(GpioBridgeTest gpio, GpioSignalListener listener) {
 		synchronized (this.listeners) {
 			List<GpioSignalListener> listeners = this.listeners.get(gpio);
 			if (listeners == null) {
