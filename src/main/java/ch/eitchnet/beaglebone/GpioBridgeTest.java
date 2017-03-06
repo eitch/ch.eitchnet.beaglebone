@@ -28,7 +28,7 @@ public class GpioBridgeTest {
 
 		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 
-		GpioBridge gpioBridge = GpioBridge.getInstance();
+		GpioBridge gpioBridge = GpioBridgeImpl.getInstance();
 
 		System.out.println("Preparing pins...");
 		greenBtn = gpioBridge.getGpio(Pin.P8_07, Direction.IN).setLabel("Green");
