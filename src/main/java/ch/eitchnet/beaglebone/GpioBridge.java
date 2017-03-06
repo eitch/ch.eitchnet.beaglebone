@@ -1,6 +1,7 @@
 package ch.eitchnet.beaglebone;
 
 public interface GpioBridge {
+
 	/**
 	 * <p>
 	 * Public API method to write the given {@link Signal} on the given {@link Gpio}'s pin.

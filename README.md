@@ -34,7 +34,7 @@ The `GpioBridge.getGpio()`-method will throw an exception if:
 ### Reading Input Pins
 To read the current signal of a pin use the `GpioBridge.readValue()`-method:
 <pre>
-GpioBridge gpioBridge = GpioBridge.getInstance();
+GpioBridge gpioBridge = GpioBridgeImpl.getInstance();
 Gpio pin8_07 = gpioBridge.getGpio(Pin.P8_07, Direction.IN);
 Signal currentSignal = gpioBridge.readValue(pin8_07);
 System.out.println(pin8_07 + " currently has signal " + currentSignal);
@@ -43,7 +43,7 @@ System.out.println(pin8_07 + " currently has signal " + currentSignal);
 ### Writing Output Pins
 To write the signal of a pin use the `GpioBridge.writeValue()`-method:
 <pre>
-GpioBridge gpioBridge = GpioBridge.getInstance();
+GpioBridge gpioBridge = GpioBridgeImpl.getInstance();
 Gpio pin8_08 = gpioBridge.getGpio(Pin.P8_08, Direction.OUT);
 gpioBridge.writeValue(pin8_08, Signal.HIGH);
 System.out.println("Set signal of " + pin8_08 + " to " + Signal.HIGH);
@@ -52,7 +52,7 @@ System.out.println("Set signal of " + pin8_08 + " to " + Signal.HIGH);
 ### Observing Input Pins
 To be notified of changes to an input GPIO, register a `GpioSignalListener`:
 <pre>
-GpioBridge gpioBridge = GpioBridge.getInstance();
+GpioBridge gpioBridge = GpioBridgeImpl.getInstance();
 Gpio pin8_07 = gpioBridge.getGpio(Pin.P8_07, Direction.IN);
 gpioBridge.register(pin8_07, gpio -> System.out.println("Signal of "+pin8_07 + " has changed to " + gpio.getSignal()));
 </pre>
